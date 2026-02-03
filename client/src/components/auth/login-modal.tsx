@@ -9,6 +9,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "fire
 import { auth } from "@/lib/firebase";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export default function LoginModal({ isOpen, onClose, userType }: LoginModalProp
   const [location, setLocation] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const [, setLocationPath] = useLocation();
 
   const createUserMutation = useMutation({
     mutationFn: async (userData: any) => {
@@ -79,9 +81,9 @@ export default function LoginModal({ isOpen, onClose, userType }: LoginModalProp
       // Redirect to appropriate dashboard
       setTimeout(() => {
         if (userType === 'farmer') {
-          window.location.href = '/farmer-dashboard';
+          setLocationPath('/farmer-dashboard');
         } else {
-          window.location.href = '/buyer-marketplace';
+          setLocationPath('/buyer-marketplace');
         }
       }, 1000);
       

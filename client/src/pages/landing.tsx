@@ -1,13 +1,28 @@
+import { useState } from "react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import Header from "@/components/layout/header";
+import logo from "@assets/logo.png";
 import { Sprout, Store, Heart, Users, Handshake, Tractor, ShoppingBasket } from "lucide-react";
-import rootedLogo from "@assets/0E49E1FA-15E2-4BCA-8F70-FFFA26020759_1755549797327.png";
+import LoginModal from "@/components/auth/login-modal";
 
 export default function LandingPage() {
+  const [, setLocation] = useLocation();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginType, setLoginType] = useState<'farmer' | 'buyer'>('farmer');
+
+  const handleFarmerClick = () => {
+    setLoginType('farmer');
+    setShowLoginModal(true);
+  };
+
+  const handleBuyerClick = () => {
+    setLoginType('buyer');
+    setShowLoginModal(true);
+  };
+
   return (
     <div className="font-inter bg-rooted-bg text-gray-900 min-h-screen">
-      <Header />
 
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-rooted-bg to-green-50 py-20">
@@ -23,14 +38,19 @@ export default function LandingPage() {
                 Connect farmers directly with buyers, manage crop schedules, and support communities through our donation platform. Building sustainable agricultural networks one harvest at a time.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="bg-rooted-primary text-white hover:bg-rooted-secondary font-semibold text-lg shadow-lg">
-                  <Sprout className="mr-3 h-5 w-5" />
+                <Button 
+                  size="lg" 
+                  className="bg-rooted-primary text-white hover:bg-rooted-secondary font-semibold text-lg shadow-lg"
+                  onClick={handleFarmerClick}
+                >
+                  <img src={logo} alt="Start" className="mr-3 h-5 w-5 object-contain brightness-0 invert" />
                   Start as Farmer
                 </Button>
                 <Button 
                   size="lg" 
                   variant="outline" 
                   className="border-2 border-rooted-primary text-rooted-primary hover:bg-rooted-primary hover:text-white font-semibold text-lg"
+                  onClick={() => setLocation('/buyer-marketplace')}
                 >
                   <Store className="mr-3 h-5 w-5" />
                   Browse Marketplace
@@ -74,8 +94,32 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* About Section */}
+      <section id="about" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="relative">
+              <img 
+                src="https://images.unsplash.com/photo-1605000797499-95a51c5269ae?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" 
+                alt="Community farming" 
+                className="rounded-2xl shadow-xl w-full h-auto" 
+              />
+            </div>
+            <div>
+              <h2 className="text-4xl font-bold text-gray-900 mb-6">Our Mission</h2>
+              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                At ROOTED, we are dedicated to bridging the gap between small-scale farmers and their local communities. We believe in fair trade, sustainable agriculture, and reducing food waste through direct connections.
+              </p>
+              <p className="text-lg text-gray-600 leading-relaxed">
+                By empowering farmers with digital tools and providing buyers with transparent access to fresh produce, we are building a more resilient and equitable food system for everyone.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
-      <section id="features" className="py-20 bg-white">
+      <section id="features" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Complete Agricultural Platform</h2>
@@ -83,7 +127,10 @@ export default function LandingPage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="bg-gradient-to-br from-green-50 to-rooted-bg border border-gray-200 hover:shadow-lg transition-shadow">
+            <Card 
+              className="bg-gradient-to-br from-green-50 to-rooted-bg border border-gray-200 hover:shadow-lg transition-all cursor-pointer hover:-translate-y-1"
+              onClick={handleFarmerClick}
+            >
               <CardContent className="p-8">
                 <div className="w-12 h-12 bg-rooted-primary rounded-xl flex items-center justify-center mb-6">
                   <Sprout className="text-white text-xl" />
@@ -107,7 +154,10 @@ export default function LandingPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-gray-200 hover:shadow-lg transition-shadow">
+            <Card 
+              className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-gray-200 hover:shadow-lg transition-all cursor-pointer hover:-translate-y-1"
+              onClick={() => setLocation('/buyer-marketplace')}
+            >
               <CardContent className="p-8">
                 <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mb-6">
                   <Store className="text-white text-xl" />
@@ -131,7 +181,10 @@ export default function LandingPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border border-gray-200 hover:shadow-lg transition-shadow">
+            <Card 
+              className="bg-gradient-to-br from-purple-50 to-pink-50 border border-gray-200 hover:shadow-lg transition-all cursor-pointer hover:-translate-y-1"
+              onClick={() => setLocation('/donation-panel')}
+            >
               <CardContent className="p-8">
                 <div className="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center mb-6">
                   <Heart className="text-white text-xl" />
@@ -164,7 +217,11 @@ export default function LandingPage() {
           <h2 className="text-4xl font-bold text-white mb-6">Ready to Join the Rooted Community?</h2>
           <p className="text-xl text-rooted-accent mb-8">Connect with local farmers, access fresh produce, and support sustainable agriculture in your area.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-white text-rooted-primary hover:bg-gray-100 font-semibold text-lg shadow-lg">
+            <Button 
+              size="lg" 
+              className="bg-white text-rooted-primary hover:bg-gray-100 font-semibold text-lg shadow-lg"
+              onClick={handleFarmerClick}
+            >
               <Tractor className="mr-3 h-5 w-5" />
               Register as Farmer
             </Button>
@@ -172,10 +229,35 @@ export default function LandingPage() {
               size="lg" 
               variant="outline" 
               className="border-2 border-white text-white hover:bg-white hover:text-rooted-primary font-semibold text-lg"
+              onClick={handleBuyerClick}
             >
               <ShoppingBasket className="mr-3 h-5 w-5" />
               Register as Buyer
             </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="py-20 bg-white">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl font-bold text-gray-900 mb-6">Get in Touch</h2>
+          <p className="text-xl text-gray-600 mb-8">
+            Have questions about joining the platform or need support? We're here to help you grow.
+          </p>
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            <div className="p-6 rounded-xl bg-gray-50">
+              <h3 className="font-semibold text-lg mb-2">Email Us</h3>
+              <p className="text-rooted-primary">support@rooted.com</p>
+            </div>
+            <div className="p-6 rounded-xl bg-gray-50">
+              <h3 className="font-semibold text-lg mb-2">Call Us</h3>
+              <p className="text-rooted-primary">+27 11 123 4567</p>
+            </div>
+            <div className="p-6 rounded-xl bg-gray-50">
+              <h3 className="font-semibold text-lg mb-2">Visit Us</h3>
+              <p className="text-rooted-primary">123 Farm Lane, Cape Town, SA</p>
+            </div>
           </div>
         </div>
       </section>
@@ -186,11 +268,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
               <div className="flex items-center space-x-3 mb-4">
-                <img 
-                  src={rootedLogo} 
-                  alt="ROOTED Logo" 
-                  className="w-12 h-12 object-contain filter brightness-0 invert"
-                />
+                <img src={logo} alt="ROOTED" className="w-12 h-12 object-contain brightness-0 invert" />
                 <div>
                   <h3 className="text-2xl font-bold">ROOTED</h3>
                   <p className="text-gray-400 text-sm">Empowering Small-Scale Farmers</p>
@@ -227,6 +305,12 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      <LoginModal 
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        userType={loginType}
+      />
     </div>
   );
 }

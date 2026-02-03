@@ -1,50 +1,44 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User as FirebaseUser, onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
-import { useQuery } from '@tanstack/react-query';
-
-interface AuthUser {
-  id: string;
-  email: string;
-  name: string;
-  userType: 'farmer' | 'buyer';
-  location?: string;
-}
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged, User as FirebaseUser, signOut } from "firebase/auth";
+import { useQuery } from "@tanstack/react-query";
+import { User } from "@shared/schema";
 
 interface AuthContextType {
   currentUser: FirebaseUser | null;
-  userProfile: AuthUser | null;
+  userProfile: User | null;
   loading: boolean;
   logout: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | null>(null);
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export function AuthProvider({ children }: AuthProviderProps) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch user profile from our database
+  // Fetch user profile from our backend when firebase user changes
   const { data: userProfile } = useQuery({
-    queryKey: ['/api/users/email', currentUser?.email],
+    queryKey: ["/api/users/email", currentUser?.email],
+    queryFn: async () => {
+      if (!currentUser?.email) return null;
+      const res = await fetch(`/api/users/email/${currentUser.email}`);
+      if (!res.ok) return null;
+      return res.json() as Promise<User>;
+    },
     enabled: !!currentUser?.email,
   });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('Auth state changed:', user ? { uid: user.uid, email: user.email } : 'No user');
       setCurrentUser(user);
       setLoading(false);
     });
@@ -53,12 +47,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const logout = async () => {
-    await auth.signOut();
+    await signOut(auth);
   };
 
-  const value: AuthContextType = {
+  const value = {
     currentUser,
-    userProfile: userProfile as AuthUser | null,
+    userProfile: userProfile || null,
     loading,
     logout,
   };

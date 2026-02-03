@@ -1,74 +1,57 @@
+import { useQuery } from "@tanstack/react-query";
+import { Crop } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { MoreVertical } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
+import { format } from "date-fns";
 
-interface CropListProps {
-  farmerId: string;
-}
-
-export default function CropList({ farmerId }: CropListProps) {
-  const { data: crops, isLoading } = useQuery({
-    queryKey: ["/api/crops", farmerId],
+export default function CropList({ farmerId }: { farmerId: string }) {
+  const { data: crops, isLoading } = useQuery<Crop[]>({
+    queryKey: [`/api/crops/${farmerId}`],
   });
 
   if (isLoading) {
+    return <div className="space-y-4">
+      <Skeleton className="h-24 w-full" />
+      <Skeleton className="h-24 w-full" />
+    </div>;
+  }
+
+  if (!crops?.length) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>Current Crops</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-gray-100 animate-pulse rounded-lg h-16"></div>
-            ))}
-          </div>
+        <CardContent className="p-6 text-center text-muted-foreground">
+          No crops listed yet. Add your first crop above!
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold text-gray-900">Current Crops</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {!crops || !Array.isArray(crops) || crops.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No crops added yet. Add your first crop to get started!</p>
-          ) : (
-            crops.map((crop: any) => (
-              <div key={crop.id} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h5 className="font-medium text-gray-900">{crop.cropName}</h5>
-                    <p className="text-sm text-gray-600">
-                      {crop.quantity} lbs • ${crop.price}/lb • {new Date(crop.harvestDate).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge
-                      className={
-                        crop.donationFlag
-                          ? "bg-purple-100 text-purple-800"
-                          : "bg-green-100 text-green-800"
-                      }
-                    >
-                      {crop.donationFlag ? "For Donation" : "For Sale"}
-                    </Badge>
-                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-600">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold">Your Crops</h3>
+      {crops.map((crop) => (
+        <Card key={crop.id}>
+          <CardContent className="p-4 flex justify-between items-center">
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="font-bold">{crop.cropName}</h4>
+                <Badge variant={crop.status === 'available' ? 'default' : 'secondary'}>
+                  {crop.status}
+                </Badge>
+                {crop.donationFlag && <Badge variant="outline" className="text-purple-600 border-purple-600">Donation</Badge>}
               </div>
-            ))
-          )}
-        </div>
-      </CardContent>
-    </Card>
+              <p className="text-sm text-muted-foreground">
+                Harvest: {format(new Date(crop.harvestDate), 'MMM d, yyyy')}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="font-bold">{crop.quantity} kg</p>
+              <p className="text-sm text-muted-foreground">R{Number(crop.price).toFixed(2)}/kg</p>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 }

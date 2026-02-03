@@ -1,155 +1,149 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { insertCropSchema, type InsertCrop } from "@shared/schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Loader2, Plus } from "lucide-react";
+import { z } from "zod";
 
-interface AddCropFormProps {
-  farmerId: string;
-}
+// Extend the schema to handle string input for numbers
+const formSchema = insertCropSchema.extend({
+  quantity: z.coerce.number().min(1, "Quantity must be at least 1"),
+  price: z.coerce.number().min(0, "Price must be positive"),
+  harvestDate: z.coerce.date(),
+});
 
-export default function AddCropForm({ farmerId }: AddCropFormProps) {
-  const [cropName, setCropName] = useState("");
-  const [quantity, setQuantity] = useState("");
-  const [price, setPrice] = useState("");
-  const [harvestDate, setHarvestDate] = useState("");
-  const [donationFlag, setDonationFlag] = useState(false);
-  
+export default function AddCropForm({ farmerId }: { farmerId: string }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [isOpen, setIsOpen] = useState(false);
 
-  const addCropMutation = useMutation({
-    mutationFn: async (cropData: any) => {
-      const response = await apiRequest("POST", "/api/crops", cropData);
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Crop added successfully!",
-        description: "Your crop has been added to your inventory.",
-      });
-      
-      // Reset form
-      setCropName("");
-      setQuantity("");
-      setPrice("");
-      setHarvestDate("");
-      setDonationFlag(false);
-      
-      // Invalidate crops query to refetch
-      queryClient.invalidateQueries({ queryKey: ["/api/crops", farmerId] });
-    },
-    onError: () => {
-      toast({
-        title: "Error adding crop",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      farmerId,
+      cropName: "",
+      quantity: 0,
+      price: 0,
+      harvestDate: new Date(),
+      donationFlag: false,
+      status: "available",
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!cropName || !quantity || !price || !harvestDate) {
-      toast({
-        title: "Please fill all fields",
-        description: "All fields are required to add a crop.",
-        variant: "destructive",
+  const mutation = useMutation({
+    mutationFn: async (values: z.infer<typeof formSchema>) => {
+      const res = await apiRequest("POST", "/api/crops", values);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/crops/${farmerId}`] });
+      toast({ title: "Success", description: "Crop added successfully" });
+      form.reset({
+        farmerId,
+        cropName: "",
+        quantity: 0,
+        price: 0,
+        harvestDate: new Date(),
+        donationFlag: false,
+        status: "available",
       });
-      return;
-    }
+      setIsOpen(false);
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
 
-    addCropMutation.mutate({
-      farmerId,
-      cropName,
-      quantity: parseInt(quantity),
-      price: parseFloat(price),
-      harvestDate: new Date(harvestDate).toISOString(),
-      donationFlag,
-    });
-  };
+  if (!isOpen) {
+    return (
+      <Button onClick={() => setIsOpen(true)} className="w-full mb-6">
+        <Plus className="mr-2 h-4 w-4" /> Add New Crop
+      </Button>
+    );
+  }
 
   return (
-    <Card className="bg-gray-50">
+    <Card className="mb-8">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold text-gray-900">Add New Crop</CardTitle>
+        <CardTitle>Add New Crop</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="cropName">Crop Name</Label>
-            <Input
-              id="cropName"
-              type="text"
-              placeholder="e.g., Organic Tomatoes"
-              value={cropName}
-              onChange={(e) => setCropName(e.target.value)}
-              className="focus:ring-2 focus:ring-rooted-primary focus:border-transparent"
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit((data) => mutation.mutate(data))} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="cropName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Crop Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. Tomatoes" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="quantity">Quantity (lbs)</Label>
-              <Input
-                id="quantity"
-                type="number"
-                placeholder="500"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                className="focus:ring-2 focus:ring-rooted-primary focus:border-transparent"
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="quantity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Quantity (kg)</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Price per kg (R)</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.01" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
-            <div>
-              <Label htmlFor="price">Price per lb</Label>
-              <Input
-                id="price"
-                type="number"
-                placeholder="3.50"
-                step="0.01"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                className="focus:ring-2 focus:ring-rooted-primary focus:border-transparent"
-              />
+            <FormField
+              control={form.control}
+              name="harvestDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Harvest Date</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="date" 
+                      value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value}
+                      onChange={(e) => field.onChange(new Date(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="flex gap-2 justify-end">
+              <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={mutation.isPending}>
+                {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Crop
+              </Button>
             </div>
-          </div>
-          
-          <div>
-            <Label htmlFor="harvestDate">Harvest Date</Label>
-            <Input
-              id="harvestDate"
-              type="date"
-              value={harvestDate}
-              onChange={(e) => setHarvestDate(e.target.value)}
-              className="focus:ring-2 focus:ring-rooted-primary focus:border-transparent"
-            />
-          </div>
-          
-          <div className="flex items-center space-x-3">
-            <Checkbox
-              id="donationFlag"
-              checked={donationFlag}
-              onCheckedChange={(checked) => setDonationFlag(checked as boolean)}
-              className="border-gray-300 focus:ring-rooted-primary"
-            />
-            <Label htmlFor="donationFlag" className="text-sm text-gray-700">
-              Mark for community donation
-            </Label>
-          </div>
-          
-          <Button
-            type="submit"
-            className="w-full bg-rooted-primary text-white hover:bg-rooted-secondary font-medium"
-            disabled={addCropMutation.isPending}
-          >
-            {addCropMutation.isPending ? "Adding..." : "Add Crop"}
-          </Button>
-        </form>
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );

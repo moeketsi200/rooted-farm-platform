@@ -51,18 +51,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/crops/:farmerId", async (req, res) => {
+  app.get("/api/crops/marketplace", async (req, res) => {
     try {
-      const crops = await storage.getCropsByFarmer(req.params.farmerId);
+      const crops = await storage.getMarketplaceCrops();
       res.json(crops);
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
   });
 
-  app.get("/api/crops/marketplace", async (req, res) => {
+  app.get("/api/crops/:farmerId", async (req, res) => {
     try {
-      const crops = await storage.getMarketplaceCrops();
+      const crops = await storage.getCropsByFarmer(req.params.farmerId);
       res.json(crops);
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
@@ -73,7 +73,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const updateSchema = z.object({
         quantity: z.number().optional(),
-        price: z.string().optional(),
+        price: z.number().optional(),
         donationFlag: z.boolean().optional(),
         status: z.string().optional()
       });

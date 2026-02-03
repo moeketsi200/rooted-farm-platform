@@ -214,7 +214,7 @@ export default function SearchFilters({ onFiltersChange }: SearchFiltersProps) {
               <div className="space-y-2">
                 <label className="text-sm font-medium flex items-center space-x-2">
                   <DollarSign className="h-4 w-4" />
-                  <span>Price Range (per lb)</span>
+                  <span>Price Range (per kg)</span>
                 </label>
                 <div className="px-3">
                   <Slider
@@ -228,8 +228,8 @@ export default function SearchFilters({ onFiltersChange }: SearchFiltersProps) {
                     className="mb-2"
                   />
                   <div className="flex justify-between text-xs text-gray-500">
-                    <span>${priceRange[0]}</span>
-                    <span>${priceRange[1]}+</span>
+                    <span>R{priceRange[0]}</span>
+                    <span>R{priceRange[1]}+</span>
                   </div>
                 </div>
               </div>

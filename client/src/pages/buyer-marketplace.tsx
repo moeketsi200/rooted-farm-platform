@@ -1,117 +1,137 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import CropCard from "@/components/buyer/crop-card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Filter } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import CropCard from "@/components/buyer/crop-card";
-import SearchFilters, { MarketplaceFilters } from "@/components/marketplace/search-filters";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetFooter,
+  SheetClose
+} from "@/components/ui/sheet";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
 
 export default function BuyerMarketplace() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState<MarketplaceFilters>({
-    searchTerm: "",
-    cropType: "",
-    location: "",
-    priceRange: [0, 100],
-    harvestDateRange: "all",
-    sortBy: "newest"
-  });
-
-  const { data: crops, isLoading } = useQuery({
+  const [searchTerm, setSearchTerm] = useState("");
+  const [priceRange, setPriceRange] = useState([10]); // Default max price $10
+  
+  const { data: crops, isLoading } = useQuery<any[]>({
     queryKey: ["/api/crops/marketplace"],
   });
 
-  const mockCrops = [
-    {
-      id: "1",
-      cropName: "Organic Tomatoes",
-      quantity: 500,
-      price: "3.50",
-      farmerName: "Thompson Farm",
-      location: "Green Valley, CA",
-      status: "available"
-    },
-    {
-      id: "2",
-      cropName: "Bell Peppers Mix",
-      quantity: 200,
-      price: "4.00",
-      farmerName: "Sunrise Farms",
-      location: "Valley Springs, CA",
-      status: "available"
-    },
-    {
-      id: "3",
-      cropName: "Mixed Greens",
-      quantity: 75,
-      price: "5.25",
-      farmerName: "Greenleaf Organic",
-      location: "Coastal Hills, CA",
-      status: "low_stock"
-    }
-  ];
+  const filteredCrops = crops?.filter(crop => {
+    const matchesSearch = 
+      crop.cropName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (crop.farmerName && crop.farmerName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (crop.location && crop.location.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesPrice = Number(crop.price) <= priceRange[0];
+    return matchesSearch && matchesPrice;
+  });
 
-  const displayCrops = crops || mockCrops;
+  const activeFiltersCount = (priceRange[0] < 10 ? 1 : 0);
 
   return (
-    <div className="min-h-screen bg-rooted-bg">
-      {/* Header */}
-      <div className="bg-blue-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="text-xl font-semibold">Local Produce Marketplace</h4>
-              <p className="text-blue-200">Fresh from local farms</p>
+    <div className="min-h-screen bg-rooted-bg p-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-rooted-primary">Marketplace</h1>
+            <p className="text-gray-600">Fresh produce directly from local farmers</p>
+          </div>
+          
+          <div className="flex gap-2 w-full md:w-auto">
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input 
+                placeholder="Search crops, farmers, or location..." 
+                className="pl-8"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Search crops..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 bg-white/10 border border-white/20 text-white placeholder-blue-200 focus:bg-white/20 focus:outline-none"
-                />
-                <Search className="absolute left-3 top-3 text-blue-200 h-4 w-4" />
-              </div>
-              <Button className="bg-white/10 text-white border border-white/20 hover:bg-white/20">
-                <Filter className="mr-2 h-4 w-4" />
-                Filters
-              </Button>
-            </div>
+            
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="relative">
+                  <Filter className="h-4 w-4 mr-2" /> 
+                  Filter
+                  {activeFiltersCount > 0 && (
+                    <Badge variant="secondary" className="ml-2 h-5 w-5 p-0 flex items-center justify-center rounded-full bg-rooted-primary text-white">
+                      {activeFiltersCount}
+                    </Badge>
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>Filter Crops</SheetTitle>
+                  <SheetDescription>
+                    Narrow down your search results.
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <Label>Max Price per kg</Label>
+                      <span className="text-sm font-medium">R{priceRange[0].toFixed(2)}</span>
+                    </div>
+                    <Slider
+                      defaultValue={[10]}
+                      max={20}
+                      step={0.5}
+                      value={priceRange}
+                      onValueChange={setPriceRange}
+                      className="py-4"
+                    />
+                  </div>
+                </div>
+                <SheetFooter>
+                  <SheetClose asChild>
+                    <Button className="w-full bg-rooted-primary">Show Results</Button>
+                  </SheetClose>
+                </SheetFooter>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Advanced Search Filters */}
-        <SearchFilters onFiltersChange={setFilters} />
-        
         {isLoading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="bg-gray-200 animate-pulse rounded-xl h-80"></div>
+          <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-[350px] rounded-xl bg-gray-200 animate-pulse" />
             ))}
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.isArray(displayCrops) ? displayCrops
-              .filter((crop: any) => 
-                crop.cropName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                crop.farmerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                crop.location.toLowerCase().includes(searchQuery.toLowerCase())
-              )
-              .map((crop: any) => (
-                <CropCard key={crop.id} crop={crop} />
-              )) : []}
-          </div>
-        )}
-
-        {(!displayCrops || !Array.isArray(displayCrops) || displayCrops.length === 0) && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No crops available at the moment.</p>
-            <p className="text-gray-400">Check back later for fresh produce!</p>
-          </div>
+          <>
+            {filteredCrops && filteredCrops.length > 0 ? (
+              <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {filteredCrops.map((crop) => (
+                  <CropCard key={crop.id} crop={crop} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-xl text-gray-500">No crops found matching your criteria.</p>
+                <Button 
+                  variant="link" 
+                  onClick={() => {
+                    setSearchTerm("");
+                    setPriceRange([10]);
+                  }}
+                  className="mt-2 text-rooted-primary"
+                >
+                  Clear all filters
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

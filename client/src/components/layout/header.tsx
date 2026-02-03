@@ -1,5 +1,5 @@
 import { Sprout, ShoppingCart, LogOut, User } from "lucide-react";
-import rootedLogo from "@assets/0E49E1FA-15E2-4BCA-8F70-FFFA26020759_1755549797327.png";
+import logo from "@assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
@@ -30,11 +30,7 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <img 
-                src={rootedLogo} 
-                alt="ROOTED Logo" 
-                className="w-12 h-12 object-contain"
-              />
+              <img src={logo} alt="ROOTED" className="w-12 h-12 object-contain" />
               <div>
                 <h1 className="text-2xl font-bold text-rooted-primary">ROOTED</h1>
                 <p className="text-xs text-rooted-muted -mt-1">Empowering Small-Scale Farmers</p>
@@ -42,9 +38,9 @@ export default function Header() {
             </div>
 
             <nav className="hidden md:flex items-center space-x-8">
-              <a href="#about" className="text-gray-600 hover:text-rooted-primary transition-colors">About</a>
-              <a href="#features" className="text-gray-600 hover:text-rooted-primary transition-colors">Features</a>
-              <a href="#contact" className="text-gray-600 hover:text-rooted-primary transition-colors">Contact</a>
+              <a href="/#about" className="text-gray-600 hover:text-rooted-primary transition-colors">About</a>
+              <a href="/#features" className="text-gray-600 hover:text-rooted-primary transition-colors">Features</a>
+              <a href="/#contact" className="text-gray-600 hover:text-rooted-primary transition-colors">Contact</a>
             </nav>
 
             <div className="flex items-center space-x-3">
@@ -85,7 +81,7 @@ export default function Header() {
                     onClick={handleFarmerLogin}
                     className="bg-rooted-primary text-white hover:bg-rooted-secondary font-medium"
                   >
-                    <Sprout className="mr-2 h-4 w-4" />
+                    <img src={logo} alt="Farmer" className="mr-2 h-4 w-4 object-contain brightness-0 invert" />
                     Login as Farmer
                   </Button>
                   <Button 

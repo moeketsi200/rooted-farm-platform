@@ -1,98 +1,105 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, Weight } from "lucide-react";
+import { MapPin, User, MessageSquare } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 
-interface CropCardProps {
-  crop: {
-    id: string;
-    cropName: string;
-    quantity: number;
-    price: string;
-    farmerName: string;
-    location: string;
-    status: string;
-  };
-}
-
-export default function CropCard({ crop }: CropCardProps) {
+export default function CropCard({ crop }: { crop: any }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [message, setMessage] = useState("");
   const { toast } = useToast();
 
-  const handleContactSeller = () => {
+  const handleContact = () => {
     toast({
-      title: "Contact information",
-      description: `Contacting ${crop.farmerName} about ${crop.cropName}`,
+      title: "Message Sent",
+      description: `Your message to ${crop.farmerName || "the farmer"} has been sent!`,
     });
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'available':
-        return 'bg-green-100 text-green-800';
-      case 'low_stock':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'available':
-        return 'Available';
-      case 'low_stock':
-        return 'Low Stock';
-      default:
-        return 'Unknown';
-    }
+    setIsOpen(false);
+    setMessage("");
   };
 
   return (
-    <Card className="border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-      <img 
-        src={`https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250`}
-        alt={`Fresh ${crop.cropName}`}
-        className="w-full h-48 object-cover"
-      />
-      <CardContent className="p-5">
-        <div className="flex items-center justify-between mb-3">
-          <h5 className="text-lg font-semibold text-gray-900">{crop.cropName}</h5>
-          <Badge className={getStatusColor(crop.status)}>
-            {getStatusText(crop.status)}
+    <>
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full">
+        <div className="h-48 bg-gray-200 relative">
+          <img 
+            src={`https://source.unsplash.com/random/400x300/?vegetable,${crop.cropName}`} 
+            alt={crop.cropName}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=400&h=300";
+            }}
+          />
+          <Badge className="absolute top-2 right-2 bg-white text-black hover:bg-white">
+            R{Number(crop.price).toFixed(2)} / kg
           </Badge>
         </div>
-        
-        <div className="space-y-2 mb-4">
-          <p className="text-gray-600 text-sm flex items-center">
-            <User className="mr-2 h-4 w-4" />
-            {crop.farmerName}
-          </p>
-          <p className="text-gray-600 text-sm flex items-center">
-            <MapPin className="mr-2 h-4 w-4" />
-            {crop.location}
-          </p>
-          <p className="text-gray-600 text-sm flex items-center">
-            <Weight className="mr-2 h-4 w-4" />
-            {crop.quantity} lbs available
-          </p>
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-2xl font-bold text-rooted-primary">
-              ${crop.price}
-              <span className="text-sm font-normal text-gray-600">/lb</span>
-            </p>
+        <CardHeader>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle className="text-xl mb-1">{crop.cropName}</CardTitle>
+              <div className="flex items-center text-sm text-gray-500">
+                <User className="h-3 w-3 mr-1" />
+                {crop.farmerName || "Unknown Farmer"}
+              </div>
+            </div>
+            <Badge variant={crop.status === 'available' ? 'default' : 'secondary'}>
+              {crop.status === 'available' ? 'In Stock' : 'Low Stock'}
+            </Badge>
           </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center text-sm text-gray-600 mb-2">
+            <MapPin className="h-4 w-4 mr-1 text-gray-400" />
+            {crop.location || "Location not specified"}
+          </div>
+          <p className="text-sm text-gray-600">
+            Available Quantity: <span className="font-semibold">{crop.quantity} kg</span>
+          </p>
+        </CardContent>
+        <CardFooter className="mt-auto">
           <Button 
-            onClick={handleContactSeller}
-            className="bg-rooted-primary text-white hover:bg-rooted-secondary font-medium"
+            className="w-full bg-rooted-primary hover:bg-rooted-secondary"
+            onClick={() => setIsOpen(true)}
           >
-            Contact Seller
+            <MessageSquare className="w-4 h-4 mr-2" />
+            Contact Farmer
           </Button>
-        </div>
-      </CardContent>
-    </Card>
+        </CardFooter>
+      </Card>
+
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Contact {crop.farmerName || "Farmer"}</DialogTitle>
+            <DialogDescription>
+              Send a message to inquire about {crop.cropName}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <Textarea 
+              placeholder="Hi, I'm interested in purchasing..." 
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="min-h-[100px]"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
+            <Button onClick={handleContact} className="bg-rooted-primary text-white">Send Message</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

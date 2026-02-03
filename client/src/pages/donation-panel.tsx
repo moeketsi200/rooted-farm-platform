@@ -43,7 +43,7 @@ export default function DonationPanel() {
             </div>
             <div className="text-right">
               <p className="text-3xl font-bold">2,847</p>
-              <p className="text-purple-200">lbs donated this month</p>
+              <p className="text-purple-200">kg donated this month</p>
             </div>
           </div>
         </div>
