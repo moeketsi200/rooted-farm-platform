@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { insertUserSchema, insertCropSchema, insertDonationSchema } from "@shared/schema";
 import { z } from "zod";
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export function registerRoutes(app: Express): Server {
   // User routes
   app.post("/api/users", async (req, res) => {
     try {
