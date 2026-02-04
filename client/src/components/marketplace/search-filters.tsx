@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Search, X, Filter, MapPin, Calendar, DollarSign } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface SearchFiltersProps {
   onFiltersChange: (filters: MarketplaceFilters) => void;
@@ -50,7 +50,7 @@ export default function SearchFilters({ onFiltersChange }: SearchFiltersProps) {
   const [sortBy, setSortBy] = useState("newest");
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const handleFiltersChange = () => {
+  useEffect(() => {
     onFiltersChange({
       searchTerm,
       cropType: cropType === "All Crops" ? "" : cropType,
@@ -59,7 +59,7 @@ export default function SearchFilters({ onFiltersChange }: SearchFiltersProps) {
       harvestDateRange,
       sortBy
     });
-  };
+  }, [searchTerm, cropType, location, priceRange, harvestDateRange, sortBy, onFiltersChange]);
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -68,14 +68,6 @@ export default function SearchFilters({ onFiltersChange }: SearchFiltersProps) {
     setPriceRange([0, 100]);
     setHarvestDateRange("all");
     setSortBy("newest");
-    onFiltersChange({
-      searchTerm: "",
-      cropType: "",
-      location: "",
-      priceRange: [0, 100],
-      harvestDateRange: "all",
-      sortBy: "newest"
-    });
   };
 
   const activeFiltersCount = [
@@ -98,7 +90,6 @@ export default function SearchFilters({ onFiltersChange }: SearchFiltersProps) {
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
-                handleFiltersChange();
               }}
               className="pl-10 h-12 text-lg"
             />
@@ -109,7 +100,6 @@ export default function SearchFilters({ onFiltersChange }: SearchFiltersProps) {
             <div className="flex items-center space-x-2">
               <Select value={cropType} onValueChange={(value) => {
                 setCropType(value);
-                handleFiltersChange();
               }}>
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Crop Type" />
@@ -127,7 +117,6 @@ export default function SearchFilters({ onFiltersChange }: SearchFiltersProps) {
             <div className="flex items-center space-x-2">
               <Select value={sortBy} onValueChange={(value) => {
                 setSortBy(value);
-                handleFiltersChange();
               }}>
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder="Sort by" />
@@ -182,7 +171,6 @@ export default function SearchFilters({ onFiltersChange }: SearchFiltersProps) {
                   value={location}
                   onChange={(e) => {
                     setLocation(e.target.value);
-                    handleFiltersChange();
                   }}
                 />
               </div>
@@ -195,7 +183,6 @@ export default function SearchFilters({ onFiltersChange }: SearchFiltersProps) {
                 </label>
                 <Select value={harvestDateRange} onValueChange={(value) => {
                   setHarvestDateRange(value);
-                  handleFiltersChange();
                 }}>
                   <SelectTrigger>
                     <SelectValue />
@@ -221,7 +208,6 @@ export default function SearchFilters({ onFiltersChange }: SearchFiltersProps) {
                     value={priceRange}
                     onValueChange={(value) => {
                       setPriceRange(value as [number, number]);
-                      handleFiltersChange();
                     }}
                     max={100}
                     step={1}
