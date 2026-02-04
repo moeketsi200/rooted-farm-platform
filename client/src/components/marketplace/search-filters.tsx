@@ -49,17 +49,23 @@ export default function SearchFilters({ onFiltersChange }: SearchFiltersProps) {
   const [harvestDateRange, setHarvestDateRange] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   useEffect(() => {
     onFiltersChange({
-      searchTerm,
+      searchTerm: debouncedSearchTerm,
       cropType: cropType === "All Crops" ? "" : cropType,
       location,
       priceRange,
       harvestDateRange,
       sortBy
     });
-  }, [searchTerm, cropType, location, priceRange, harvestDateRange, sortBy, onFiltersChange]);
+  }, [debouncedSearchTerm, cropType, location, priceRange, harvestDateRange, sortBy, onFiltersChange]);
 
   const clearFilters = () => {
     setSearchTerm("");
