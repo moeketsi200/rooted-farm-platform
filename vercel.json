@@ -2,27 +2,22 @@
   "version": 2,
   "builds": [
     {
-      "src": "client",
+      "src": "client/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "installCommand": "cd ../ && npm install",
-        "buildCommand": "npm run build:client",
+        "buildCommand": "npm run build",
         "outputDirectory": "dist"
       }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "https://your-server-url.onrender.com/api/$1"
+      "source": "/api/(.*)",
+      "destination": "https://your-server-url.onrender.com/api/$1"
     },
     {
-      "src": "/(.*\\..*)",
-      "dest": "/dist/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/dist/index.html"
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
     }
   ]
 }
