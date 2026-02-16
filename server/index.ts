@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
+import { setupVite, serveStatic } from "./vite";
 
 const app = express();
 app.use(express.json());
@@ -37,6 +38,14 @@ app.use((req, res, next) => {
 
 const server = registerRoutes(app);
 
+if (process.env.NODE_ENV !== "production") {
+  // In development, use Vite's dev server
+  await setupVite(app, server);
+} else {
+  // In production, serve static files
+  serveStatic(app);
+}
+
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   const status = err.status || err.statusCode || 500;
   const message = err.message || "Internal Server Error";
@@ -44,6 +53,16 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 if (process.env.NODE_ENV !== "production") {
+  const port = parseInt(process.env.PORT || '5000', 10);
+  server.listen({
+    port,
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
+    console.log(`serving on port ${port}`);
+  });
+} else {
+  // In production, start the server
   const port = parseInt(process.env.PORT || '5000', 10);
   server.listen({
     port,
