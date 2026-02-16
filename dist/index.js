@@ -300,7 +300,7 @@ app.use((req, res, next) => {
 var server = registerRoutes(app);
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
-    const { setupVite } = await import('./vite-66XMOX7X.js');
+    const { setupVite } = await import('./vite-TTBVVGOS.js');
     await setupVite(app, server);
   } else {
     const distPath = path.resolve(__dirname$1, "public");
