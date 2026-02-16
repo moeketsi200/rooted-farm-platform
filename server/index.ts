@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
+export const storage = new MemStorage();
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
