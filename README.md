@@ -30,8 +30,12 @@ A comprehensive platform connecting small-scale farmers with buyers and facilita
 This application is deployed across multiple platforms:
 
 ### 1. Database (PostgreSQL)
-Create a PostgreSQL database at [Neon.tech](https://neon.tech) or [Supabase](https://supabase.com).
-Get your connection string (e.g., `postgres://user:pass@host/dbname`).
+**Using Supabase:**
+1. Create a new project at Supabase.com.
+2. Go to **Project Settings** (cog icon) > **Database**.
+3. Under **Connection String**, select **URI** and copy the value.
+DATABASE_URL="postgresql://postgres:Mahxkatlego200!@db.prpucxdjnjjvbsxpiixl.supabase.co:6543/postgres"
+4. Replace `[YOUR-PASSWORD]` with the password you set during project creation.
 
 ### 2. Backend Server (Render/Railway)
 1. Push your code to GitHub
@@ -45,7 +49,12 @@ Get your connection string (e.g., `postgres://user:pass@host/dbname`).
      - `DATABASE_URL`: Your PostgreSQL connection string
      - `NODE_ENV`: `production`
      - `PORT`: `5000`
-     - Firebase config variables
+     - `FIREBASE_API_KEY`
+     - `FIREBASE_AUTH_DOMAIN`
+     - `FIREBASE_PROJECT_ID`
+     - `FIREBASE_STORAGE_BUCKET`
+     - `FIREBASE_MESSAGING_SENDER_ID`
+     - `FIREBASE_APP_ID`
 
 ### 3. Frontend (Vercel)
 1. Go to [Vercel.com](https://vercel.com)
@@ -60,6 +69,7 @@ Get your connection string (e.g., `postgres://user:pass@host/dbname`).
 ```bash
 npm run build:client   # Build React frontend
 npm run build:server   # Build Express server with tsup
+npm run db:push        # Push schema to database (run locally first)
 npm run start:server   # Run production server
 ```
 

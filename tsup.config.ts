@@ -2,8 +2,9 @@ import { defineConfig } from 'tsup';
 
 export default defineConfig({
   entry: ['server/index.ts'],
-  format: 'cjs',
+  format: 'esm',
   outDir: 'dist',
+  target: 'es2020',
   external: [
     'express',
     'express-session',
@@ -12,10 +13,6 @@ export default defineConfig({
     'ws',
     'dotenv',
   ],
-  resolveExtensions: ['.ts', '.js'],
-  alias: {
-    '@shared': './shared',
-  },
   noExternal: [],
   treeshake: true,
   sourcemap: true,
