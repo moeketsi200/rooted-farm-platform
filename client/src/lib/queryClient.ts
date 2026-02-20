@@ -1,4 +1,4 @@
-import { QueryClient, QueryFunctionContext } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
 
 export async function apiRequest(
   method: string,
@@ -14,8 +14,12 @@ export async function apiRequest(
   });
 
   if (!res.ok) {
-    const json = await res.json();
-    throw new Error(json.message || res.statusText);
+    const contentType = res.headers.get("content-type");
+    if (contentType?.includes("application/json")) {
+      const json = await res.json();
+      throw new Error(json.message || res.statusText);
+    }
+    throw new Error(res.statusText);
   }
 
   return res;

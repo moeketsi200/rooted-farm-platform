@@ -38,6 +38,19 @@ export default function LoginModal({ isOpen, onClose, userType }: LoginModalProp
     e.preventDefault();
     setIsLoading(true);
 
+    // Debug: Check if Firebase is configured correctly
+    const apiKey = auth.app.options.apiKey;
+    if (!apiKey) {
+      console.error("Firebase API Key is missing.");
+      toast({
+        title: "Configuration Error",
+        description: "Firebase API Key is missing.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
       console.log('Starting authentication for:', { email, userType, isSignUp });
       
